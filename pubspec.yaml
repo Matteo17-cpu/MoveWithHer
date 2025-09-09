@@ -39,6 +39,8 @@ dependencies:
   http: ^1.2.0
   flutter_reactive_ble: ^5.0.2
   shared_preferences: ^2.1.1
+  flutter_blue_plus: ^1.35.9
+  camera: ^0.11.2
   
 dev_dependencies:
   flutter_test:
@@ -122,6 +124,16 @@ flutter:
      - assets/img/exercisedata.png
      - assets/img/dietdata.png
      - assets/img/menstrualdata.png
+     - assets/img/focusstart.png
+     - assets/img/removebutton.png
+     - assets/img/hercommunity.png
+     - assets/img/backgroundkuning.png
+     - assets/img/dives.png
+     - assets/img/todayactivity1.png
+     - assets/img/todayactivity2.png
+     - assets/img/todayactivity3.png
+     - assets/img/recommendationbackground.png
+     - assets/img/addbutton.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,11 +1,13 @@
 import 'package:card_stack_widget/widget/card_stack_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_app/common/color_extension.dart';
+import 'package:workout_app/common_widget/on_boarding_page.dart';
 import 'package:workout_app/common_widget/workout_heartrate_page.dart';
 import 'package:workout_app/view/home/about_herstrap.dart';
 import 'package:workout_app/view/home/about_movewithher_page.dart';
 import 'package:workout_app/view/home/card_stack_widget.dart';
 import 'package:workout_app/view/home/dashboard.dart';
+import 'package:workout_app/view/home/exercise_page.dart';
 import 'package:workout_app/view/home/her_data_page.dart';
 import 'package:workout_app/view/home/recommendation_page.dart';
 import 'package:workout_app/view/login/welcome_view.dart';
@@ -45,7 +47,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: false,
       ),
-      home: const StartedView(),
+      home: const Dashboard(),
     );
   }
 }

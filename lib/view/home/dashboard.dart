@@ -3,8 +3,11 @@ import 'package:card_stack_widget/card_stack_widget.dart';
 import 'package:card_stack_widget/widget/card_stack_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_app/common/color_extension.dart';
+import 'package:workout_app/view/fitur/scan_dish.dart';
+import 'package:workout_app/view/fitur/workout_recommendations.dart';
 import 'package:workout_app/view/home/about_herstrap.dart';
 import 'package:workout_app/view/home/about_movewithher_page.dart';
+import 'package:workout_app/view/home/exercise_page.dart';
 import 'package:workout_app/view/home/her_data_page.dart';
 import 'package:workout_app/view/home/profile_page.dart'; 
 
@@ -184,7 +187,9 @@ class _DashboardState extends State<Dashboard> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _featureIcon("HerExercise Plan", "assets/img/exercise_plan.png"),
+                            _featureIcon("HerExercise Plan", "assets/img/exercise_plan.png", onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutRecommendations()));
+                              },),
                             _featureIcon("HerCycle", "assets/img/menstrual_tracker.png"),
                             _featureIcon("HerDiet", "assets/img/diet.png"),
                           ],
@@ -196,11 +201,11 @@ class _DashboardState extends State<Dashboard> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _featureIcon("Scan HerDish", "assets/img/scan_dish.png"),
-                              InkWell(
-                                child: Image.asset("assets/img/HerChatBot.png", width: 165, height: 50,),
-                              ),
-                              _featureIcon("Analyze\nHerProgress", "assets/img/herprogress.png")
+                              _featureIcon("Scan HerDish", "assets/img/scan_dish.png", onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => ScanDish()));
+                              },),
+                              _featureIcon("Her Community", "assets/img/hercommunity.png",),
+                              _featureIcon("HerProgress", "assets/img/herprogress.png",)
                             ],
                           ),
                         ),
@@ -215,7 +220,7 @@ class _DashboardState extends State<Dashboard> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("HerCommunity", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w700),),
+                              Text("HerChatBot", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),),
                               Text("14 Unread Chats", style: TextStyle(fontSize: 16, color: Colors.brown, fontWeight: FontWeight.w700),),
                             ],
                           ),
@@ -225,72 +230,52 @@ class _DashboardState extends State<Dashboard> {
                 ),
               )
               ),
-              Positioned(
-                bottom: 0,
-                child: SafeArea(top: false,
-                child: 
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  color: Colors.transparent,
-                  height: MediaQuery.of(context).size.height * 0.38,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      Container(
-                        height: 83,
-                        padding: EdgeInsets.only(top: 32, left: 0, right: 12, bottom: 0),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [Color(0xFFB4D9FF), Color(0xFFDCEBFF)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Align(
-                                  alignment: Alignment.bottomLeft,
-                                  child: 
-                                  Image.asset("assets/img/ijobaru.png",fit: BoxFit.contain,)
-                                ),
-                                Image.asset("assets/img/focusbaru.png", width: 102, height: 200, fit: BoxFit.contain,)
-                              ],
-                            ),
-                            // SizedBox(width: 20,)
-                            GestureDetector(
-                              onTap: () {
-                                
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(7),
-                                width: 190,
-                                height: 47,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF84A2C5),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  "Let's Exercise",
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFFFFFFF)
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),),)
               ],
               )
               ),
+              bottomNavigationBar: Container(
+              width: 442,
+              height: 83,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF84A2C5), 
+                    Color(0xFFFFFFFF), 
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(   
+
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context, MaterialPageRoute(
+                        builder: (context) => ExercisePage(),));
+                  },
+                  child: Container(
+                    width: 245,
+                    height: 47,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF84A2C5),
+                      borderRadius: BorderRadius.circular(12)
+                    ),
+                    child: Center(
+                      child: Text(
+                        "LET’S EXERCISE", style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
     );
   }
 }
@@ -528,32 +513,35 @@ List<CardModel> _buildMockList(BuildContext context, {int size = 0}) {
   return list;
 }
 
-Widget _featureIcon(String label, String image, {bool highlight = false}) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 90,
-        height: 90,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(image),
-            fit: BoxFit.contain,
+Widget _featureIcon(String label, String image, {bool highlight = false, VoidCallback? onTap}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(image),
+              fit: BoxFit.contain,
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
         ),
-      ),
-      const SizedBox(height: 3),
-      Text(
-        label,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 11,
-          color: highlight ? Colors.orange : Colors.black,
+        const SizedBox(height: 3),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 11,
+            color: highlight ? Colors.orange : Colors.black,
+          ),
         ),
-      ),
-    ],
+      ],
+    ),
   );
 }
 

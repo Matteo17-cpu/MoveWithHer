@@ -11,7 +11,6 @@ class AboutHerstrap extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // 👉 Background hijau full screen
             Positioned(
               child: Image.asset(
                 'assets/img/linearbackground2.png',
