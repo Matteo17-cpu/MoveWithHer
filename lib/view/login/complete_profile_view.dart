@@ -6,10 +6,11 @@ import '../../common_widget/round_button.dart';
 import '../../common_widget/round_textfield.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class CompleteProfileView extends StatefulWidget {
   const CompleteProfileView({super.key, required this.userId});
-  final String userId;
+  final String userId; // ganti ke String biar fleksibel
 
   @override
   State<CompleteProfileView> createState() => _CompleteProfileViewState();
@@ -21,7 +22,9 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
     "Quadriplegia",
     "Diplegia",
     "Paraplegia",
+    "None"
   ];
+
   TextEditingController txtDate = TextEditingController();
   TextEditingController txtWeight = TextEditingController();
   TextEditingController txtHeight = TextEditingController();
@@ -29,19 +32,20 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
 
   Future<void> selectDate() async {
     DateTime? pickedDate = await showDatePicker(
-      context: context, 
-      initialDate: DateTime(2000), 
-      firstDate: DateTime(1900), 
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1900),
       lastDate: DateTime.now(),
-      );
+    );
 
-      if (pickedDate != null) {
-        setState(() {
-          txtDate.text =
-          "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-        });
-      }
+    if (pickedDate != null) {
+      setState(() {
+        // format ISO biar konsisten ke backend
+        txtDate.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+      });
+    }
   }
+
   Future<void> submitProfile() async {
     if (txtDate.text.isEmpty ||
         txtWeight.text.isEmpty ||
@@ -51,39 +55,45 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
         const SnackBar(content: Text("Please complete all fields")),
       );
       return;
-      }
-      try {
-        final response = await http.post(
-          Uri.parse("http://127.0.0.1:5000/register_profile"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "user_id": widget.userId,
-            "dob": txtDate.text,
-            "weight": txtWeight.text,
-            "height": txtHeight.text,
-            "disability": txtDisability.text,
-          }),
-        );
+    }
 
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          print("Profile saved: $data");
+    try {
+      final response = await http.post(
+        Uri.parse("https://fitness-backend-api-silk.vercel.app/api/auth/register_profile"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user_id": widget.userId,
+          "dob": txtDate.text,
+          "weight": int.tryParse(txtWeight.text) ?? 0,
+          "height": int.tryParse(txtHeight.text) ?? 0,
+          "disability": txtDisability.text,
+        }),
+      );
 
-          Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const WhatYourGoalView()),
-            );
-        } else {
-          print("Failed: ${response.body}");
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Failed to save profile")),
-          );
-        }
-      } catch (e) {
-        print("Error: $e");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("✅ Profile saved: $data");
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error connecting to server")),
+          const SnackBar(content: Text("Profile berhasil disimpan!")),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const WhatYourGoalView()),
+        );
+      } else {
+        print("❌ Failed: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed: ${response.body}")),
         );
       }
+    } catch (e) {
+      print("⚠️ Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
   }
 
   @override
@@ -98,7 +108,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
             padding: const EdgeInsets.all(15.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Image.asset(
                   "assets/img/Register.png",
@@ -119,11 +128,12 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                 ),
                 SizedBox(height: media.width * 0.05),
 
-                /// ⬇️ Isi Form
+                /// Form
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Column(
                     children: [
+                      /// Date of Birth
                       RoundTextField(
                         controller: txtDate,
                         hitText: "Date of Birth",
@@ -144,27 +154,12 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 LengthLimitingTextInputFormatter(3),
-                                FilteringTextInputFormatter.digitsOnly
+                                FilteringTextInputFormatter.digitsOnly,
                               ],
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Container(
-                            width: 50,
-                            height: 50,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: TColor.secondaryG,
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Text(
-                              "KG",
-                              style:
-                                  TextStyle(color: TColor.white, fontSize: 12),
-                            ),
-                          )
+                          _unitBox("KG"),
                         ],
                       ),
                       SizedBox(height: media.width * 0.04),
@@ -180,80 +175,64 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                               keyboardType: TextInputType.number,
                               inputFormatters: [
                                 LengthLimitingTextInputFormatter(3),
-                                FilteringTextInputFormatter.digitsOnly
+                                FilteringTextInputFormatter.digitsOnly,
                               ],
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Container(
-                            width: 50,
-                            height: 50,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: TColor.secondaryG,
-                              ),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Text(
-                              "CM",
-                              style:
-                                  TextStyle(color: TColor.white, fontSize: 12),
-                            ),
-                          )
+                          _unitBox("CM"),
                         ],
                       ),
                       SizedBox(height: media.width * 0.04),
 
                       /// Disabilities
-                    RoundTextField(
-                  controller: txtDisability,
-                  hitText: "Disabilities",
-                  icon: "assets/img/Disability.png",
-                  readOnly: true,
-                  rightIcon: GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      RoundTextField(
+                        controller: txtDisability,
+                        hitText: "Disabilities",
+                        icon: "assets/img/Disability.png",
+                        readOnly: true,
+                        rightIcon: GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (BuildContext context) {
+                                return ListView.builder(
+                                  itemCount: disabilityOptions.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      title: Text(
+                                        disabilityOptions[index],
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      onTap: () {
+                                        setState(() {
+                                          txtDisability.text =
+                                              disabilityOptions[index];
+                                        });
+                                        Navigator.pop(context);
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Image.asset(
+                              "assets/img/dropdown.png",
+                              width: 20,
+                              height: 20,
+                              fit: BoxFit.contain,
+                              color: TColor.secondaryColor2,
+                            ),
+                          ),
                         ),
-                        builder: (BuildContext context) {
-                          return ListView.builder(
-                            itemCount: disabilityOptions.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                title: Text(
-                                  disabilityOptions[index],
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                onTap: () {
-                                  setState(() {
-                                    txtDisability.text = disabilityOptions[index];
-                                  });
-                                  Navigator.pop(context);
-                                },
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Image.asset(
-                        "assets/img/dropdown.png", // ← icon dropdown kamu
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.contain,
-                        color: TColor.secondaryColor2,
                       ),
-                    ),
-                  ),
-                ),
-
-
-
                       SizedBox(height: media.width * 0.07),
 
                       /// Button
@@ -269,6 +248,23 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Widget helper untuk box unit (KG / CM)
+  Widget _unitBox(String unit) {
+    return Container(
+      width: 50,
+      height: 50,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: TColor.secondaryG),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Text(
+        unit,
+        style: TextStyle(color: TColor.white, fontSize: 12),
       ),
     );
   }

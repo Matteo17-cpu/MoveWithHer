@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:workout_app/view/fitur/workout_details.dart';
 import 'package:workout_app/view/home/profile_page.dart';
 
@@ -10,12 +12,47 @@ class WorkoutRecommendations extends StatefulWidget {
 }
 
 class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
+  List<dynamic> recommendations = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRecommendations();
+  }
+
+  Future<void> fetchRecommendations() async {
+    try {
+      final response = await http.post(
+        Uri.parse("https://fitness-backend-api-silk.vercel.app/api/recommendation"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user": "Rina",
+          "disability": "Diplegia",
+          "BPM": 130,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          recommendations = jsonDecode(response.body);
+          isLoading = false;
+        });
+      } else {
+        print("Failed: ${response.body}");
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print("Error: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background fullscreen
           Positioned.fill(
             child: Image.asset(
               "assets/img/recommendationbackground.png",
@@ -46,15 +83,12 @@ class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const ProfilePage(),
-                              ),
+                              MaterialPageRoute(builder: (context) => const ProfilePage()),
                             );
                           },
                           child: const CircleAvatar(
                             radius: 18,
-                            backgroundImage:
-                                AssetImage('assets/img/img_avatar_1.png'),
+                            backgroundImage: AssetImage('assets/img/img_avatar_1.png'),
                           ),
                         ),
                       ],
@@ -74,51 +108,30 @@ class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Workout Item
-                    _workoutItem(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "DIVES",
-                      subtitle: "3 set 10-12 repetition (0,5-2 kg)",
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkoutDetails()));
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    _workoutItem(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "Bicep Curls",
-                      subtitle: "3 set 10-12 repetition (2-4 kg)",
-                    ),
-                    const SizedBox(height: 12),
-                    _workoutItem(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "Shoulder Press",
-                      subtitle: "3 set 10-12 repetition (2-4 kg)",
-                    ),
-                    const SizedBox(height: 12),
-                    _workoutadd(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "Raised Arm Cirles",
-                      subtitle: "3 set 10-12 repetition (2-4 kg)",
-                    ),
-                    const SizedBox(height: 12),
-                    _workoutadd(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "Shoulder Press",
-                      subtitle: "3 set 10-12 repetition (2-4 kg)",
-                    ),
-                    const SizedBox(height: 12),
-                    _workoutadd(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "Shoulder Press",
-                      subtitle: "3 set 10-12 repetition (2-4 kg)",
-                    ),
-                    const SizedBox(height: 12),
-                    _workoutadd(
-                      image: "assets/img/Lateral_raises.png",
-                      title: "Shoulder Press",
-                      subtitle: "3 set 10-12 repetition (2-4 kg)",
-                    ),
+                    // Content
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (recommendations.isEmpty)
+                      const Center(child: Text("No recommendations found"))
+                    else
+                      Column(
+                        children: recommendations.map((rec) {
+                          return _workoutItem(
+                            image: "assets/img/Lateral_raises.png",
+                            title: rec["nama"] ?? "Unknown",
+                            subtitle:
+                                "Intensity: ${rec["intensity"] ?? "-"} | For: ${rec["classification"].join(", ")}",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const WorkoutDetails(),
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      ),
                   ],
                 ),
               ),
@@ -129,14 +142,20 @@ class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
     );
   }
 
-  Widget _workoutItem({required String image, required String title, required String subtitle, VoidCallback? onTap}) {
+  Widget _workoutItem({
+    required String image,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap ?? () {},
       child: Container(
         width: double.infinity,
         height: 80,
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Color(0xFFF1F3FA),
+          color: const Color(0xFFF1F3FA),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(
@@ -144,13 +163,8 @@ class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset(
-                image,
-                width: 101,
-                height: 68,
-              ),
+              Image.asset(image, width: 101, height: 68),
               const SizedBox(width: 12),
-      
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +189,6 @@ class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
                   ],
                 ),
               ),
-      
               GestureDetector(
                 onTap: () {
                   print("Remove clicked");
@@ -193,66 +206,3 @@ class _WorkoutRecommendationsState extends State<WorkoutRecommendations> {
     );
   }
 }
-Widget _workoutadd({required String image, required String title, required String subtitle, VoidCallback? onTap,}) {
-    return GestureDetector(
-      onTap: onTap ?? () {},
-      child: Container(
-        width: double.infinity,
-        height: 80,
-        decoration: BoxDecoration(
-          color: Color(0xFFF1F3FA),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset(
-                image,
-                width: 101,
-                height: 68,
-              ),
-              const SizedBox(width: 12),
-      
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E9E5B),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF84A2C5),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      
-              GestureDetector(
-                onTap: () {
-                  print("add clicked");
-                },
-                child: Image.asset(
-                  "assets/img/addbutton.png",
-                  width: 24,
-                  height: 24,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }

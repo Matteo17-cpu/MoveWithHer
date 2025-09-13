@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:workout_app/common/color_extension.dart';
-import 'package:workout_app/view/home/profile_page.dart';
+import 'package:http/http.dart' as http;
+import 'package:workout_app/view/fitur/workout_plan.dart';
 import 'package:workout_app/view/home/start_exercise_page.dart';
+import 'package:workout_app/view/home/profile_page.dart';
 
 class ExercisePage extends StatefulWidget {
   const ExercisePage({super.key});
@@ -11,19 +13,75 @@ class ExercisePage extends StatefulWidget {
 }
 
 class _ExercisePageState extends State<ExercisePage> {
+  bool isLoading = true;
+  List<WorkoutPlan> recommendations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRecommendations();
+  }
+
+  Future<void> fetchRecommendations() async {
+    try {
+      final response = await http.post(
+        Uri.parse("https://fitness-backend-api-silk.vercel.app/api/recommendation"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user": "Cempaka",
+          "disability": "Diplegia",
+          "BPM": 120,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          recommendations = data.map((item) {
+            return WorkoutPlan(
+              title: item['nama'] ?? "Untitled",
+              image: "assets/img/default.png",
+              setsReps: "Intensity: ${item['intensity'] ?? 'Medium'}",
+              rest: "Rest: 60s",
+              page: const Placeholder(),
+            );
+          }).toList();
+          isLoading = false;
+        });
+      } else {
+        throw Exception("Failed to load recommendations");
+      }
+    } catch (e) {
+      debugPrint("Error fetching recommendations: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final weekdays = [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ];
+    final today = weekdays[now.weekday - 1];
+
     return Scaffold(
-      backgroundColor: Colors.transparent, // biar gradient keliatan
+      backgroundColor: Colors.transparent,
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF84A2C5), // warna atas
-              Color(0xFFFFFFFF), // warna bawah
-            ],
+            colors: [Color(0xFF84A2C5), Color(0xFFFFFFFF)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -33,10 +91,9 @@ class _ExercisePageState extends State<ExercisePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
+                // ===== HEADER =====
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -59,19 +116,20 @@ class _ExercisePageState extends State<ExercisePage> {
                         },
                         child: const CircleAvatar(
                           radius: 18,
-                          backgroundImage:
-                              AssetImage('assets/img/img_avatar_1.png'),
+                          backgroundImage: AssetImage('assets/img/img_avatar_1.png'),
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Card utama
+
+                const SizedBox(height: 18),
+
+                // ===== WORKOUT LIST CONTAINER =====
                 Padding(
-                  padding: const EdgeInsets.all(18.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
-                    width: 389,
-                    height: 461,
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       color: const Color(0xFF84A2C5),
@@ -79,43 +137,45 @@ class _ExercisePageState extends State<ExercisePage> {
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Header Herstrap
+                          // Header Herstrap (statis)
                           Container(
-                            width: 368,
+                            width: double.infinity,
                             height: 47,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(13.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 13),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const Text(
                                     "HERSTRAP",
                                     style: TextStyle(
-                                        color: Color(0xFF27384B),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                      color: Color(0xFF27384B),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   Container(
                                     width: 128,
                                     height: 27,
                                     decoration: BoxDecoration(
-                                        color: const Color(0xFF89C4A0),
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
+                                      color: Color(0xFF89C4A0),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
                                     child: const Center(
                                       child: Text(
                                         "CONNECTED",
                                         style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -123,124 +183,92 @@ class _ExercisePageState extends State<ExercisePage> {
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 7),
-                          // Workout List
+
+                          // Today Workout List
                           Container(
-                            width: 368,
-                            height: 231,
+                            width: double.infinity,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 14, top: 8),
-                              child: Align(
-                                alignment: Alignment.topLeft,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      "MONDAY WORKOUT",
-                                      style: TextStyle(
-                                          color: Color(0xFF27384B),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
+                              padding: const EdgeInsets.all(14),
+                              child: isLoading
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "$today WORKOUT",
+                                          style: const TextStyle(
+                                            color: Color(0xFF27384B),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 11),
+
+                                        // Loop rekomendasi langsung Text aja
+                                        ...recommendations.map((rec) {
+                                          return Padding(
+                                            padding:
+                                                const EdgeInsets.only(bottom: 8.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  rec.title,
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF84A2C5),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  rec.setsReps,
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF84A2C5),
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  rec.rest,
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF84A2C5),
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ],
                                     ),
-                                    SizedBox(height: 11),
-                                    Text(
-                                      "Lateral Raises",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      "3 set 10-12 repetition (0,5-2 kg)",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 13),
-                                    ),
-                                    SizedBox(height: 9),
-                                    Text(
-                                      "Lateral Raises",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      "3 set 10-12 repetition (0,5-2 kg)",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 13),
-                                    ),
-                                    SizedBox(height: 9),
-                                    Text(
-                                      "Lateral Raises",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      "3 set 10-12 repetition (0,5-2 kg)",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 13),
-                                    ),
-                                    SizedBox(height: 9),
-                                    Text(
-                                      "Lateral Raises",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      "3 set 10-12 repetition (0,5-2 kg)",
-                                      style: TextStyle(
-                                          color: Color(0xFF84A2C5),
-                                          fontSize: 13),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
+
                           const SizedBox(height: 6),
-                          // Recommendations
+
+                          // Added Recommendations placeholder
                           Container(
-                            width: 368,
-                            height: 146,
+                            width: double.infinity,
+                            height: 140,
                             decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 14, top: 8),
-                              child: Align(
-                                alignment: Alignment.topLeft,
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "ADDED RECOMMENDATIONS",
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF27384B)),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    _buildRecommendationItem(),
-                                    const SizedBox(height: 8),
-                                    _buildRecommendationItem(),
-                                  ],
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Text(
+                                "ADDED RECOMMENDATIONS",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF27384B),
                                 ),
                               ),
                             ),
@@ -249,85 +277,68 @@ class _ExercisePageState extends State<ExercisePage> {
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar:
-      Container(
-          width: double.infinity,
-          height: 83,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF84A2C5), // warna atas
-                Color(0xFFFFFFFF), // warna bawah
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+
+      // ===== BOTTOM START BUTTON =====
+      bottomNavigationBar: Container(
+        width: double.infinity,
+        height: 83,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF84A2C5), Color(0xFFFFFFFF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          child: Center(
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => StartExercisePage()));
-              },
-              child: Container(
-                width: 245,
-                height: 47,
-                decoration: BoxDecoration(
-                    color: const Color(0xFF84A2C5),
-                    borderRadius: BorderRadius.circular(12)),
-                child: const Center(
-                  child: Text(
-                    "START EXERCISE",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold),
+        ),
+        child: Center(
+          child: GestureDetector(
+            onTap: () {
+              if (isLoading) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text("Please wait... still loading workouts")),
+                );
+                return;
+              }
+              if (recommendations.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("No workouts available today")),
+                );
+                return;
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      StartExercisePage(workoutlist: recommendations),
+                ),
+              );
+            },
+            child: Container(
+              width: 245,
+              height: 47,
+              decoration: BoxDecoration(
+                color: const Color(0xFF84A2C5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Text(
+                  "START EXERCISE",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-  }
-
-  Widget _buildRecommendationItem() {
-    return Container(
-      width: 353,
-      height: 50,
-      decoration: BoxDecoration(
-          color: const Color(0xFFF1F3FA),
-          borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  "Lateral Raises",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF84A2C5)),
-                ),
-                Text(
-                  "3 set 10-12 repetition (0,5-2 kg)",
-                  style: TextStyle(color: Color(0xFF84A2C5), fontSize: 13),
-                ),
-              ],
-            ),
-            Image.asset("assets/img/removebutton.png"),
-          ],
         ),
       ),
     );
