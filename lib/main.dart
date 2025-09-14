@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:workout_app/common/color_extension.dart';
 import 'package:workout_app/common_widget/on_boarding_page.dart';
 import 'package:workout_app/common_widget/workout_heartrate_page.dart';
+import 'package:workout_app/view/fitur/food_detail.dart';
 import 'package:workout_app/view/fitur/her_community.dart';
+import 'package:workout_app/view/fitur/her_cycle.dart';
 import 'package:workout_app/view/home/about_herstrap.dart';
 import 'package:workout_app/view/home/about_movewithher_page.dart';
 import 'package:workout_app/view/home/card_stack_widget.dart';
@@ -23,7 +25,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

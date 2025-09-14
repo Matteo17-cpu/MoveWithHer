@@ -43,6 +43,7 @@ dependencies:
   camera: ^0.11.2
   intl: ^0.19.0
   video_player: ^2.5.1
+  supabase_flutter: ^2.5.4
   
 dev_dependencies:
   flutter_test:
@@ -54,6 +55,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -139,6 +141,30 @@ flutter:
      - assets/img/backgroundpink.png
      - assets/img/sports.png
      - assets/img/backgroundbiru.png
+     - assets/img/backgrounddiet.png
+     - assets/img/food1.png
+     - assets/img/food2.png
+     - assets/img/food3.png
+     - assets/img/food4.png
+     - assets/img/bigfood1.png
+     - assets/img/backgroundmenstrual.png
+     - assets/img/follicularphase.png
+     - assets/img/acne.png
+     - assets/img/appetitechanges.png
+     - assets/img/moodswings.png
+     - assets/img/appetitechanges1.png
+     - assets/img/moodswings1.png
+     - assets/img/headaches.png
+     - assets/img/MWH.png
+     - assets/img/community1.png
+     - assets/img/community2.png
+     - assets/img/community3.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/img/MWH.png"
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

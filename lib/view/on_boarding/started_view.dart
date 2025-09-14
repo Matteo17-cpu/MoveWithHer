@@ -7,10 +7,10 @@ class StartedView extends StatefulWidget {
   const StartedView({super.key});
 
   @override
-  State<StartedView> createState() => _nameState();
+  State<StartedView> createState() => _StartedViewState();
 }
 
-class _nameState extends State<StartedView> {
+class _StartedViewState extends State<StartedView> {
   bool isChangecolor = false;
 
   @override
@@ -22,47 +22,56 @@ class _nameState extends State<StartedView> {
       body: Container(
         width: media.width,
         decoration: BoxDecoration(
-          gradient:
-              isChangecolor
-                  ? LinearGradient(
-                    colors: TColor.primaryG,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                  : null,
+          gradient: isChangecolor
+              ? LinearGradient(
+                  colors: TColor.primaryG,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(),
-            Text(
-              "MoveWithHer",
-              style: TextStyle(
-                color: TColor.black,
-                fontSize: 36,
-                fontWeight: FontWeight.w700,
+            Image.asset(
+              "assets/img/MWH.png",
+              width: 347,
+              height: 347,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 20),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: TColor.black,
+                ),
+                children: [
+                  const TextSpan(text: "MoveWith"),
+                  TextSpan(
+                    text: "Her",
+                    style: TextStyle(color: Color(0xFFAE3838)),
+                  ),
+                ],
               ),
             ),
-
             Text(
               "Move your body with MoveWithHer",
               style: TextStyle(color: TColor.gray, fontSize: 18),
             ),
-
             const Spacer(),
-
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: RoundButton(
                   title: "Get Started",
-                  type:
-                      isChangecolor
-                          ? RoundButtonType.textGradient
-                          : RoundButtonType.bgGradient,
+                  type: isChangecolor
+                      ? RoundButtonType.textGradient
+                      : RoundButtonType.bgGradient,
                   onPressed: () {
                     if (isChangecolor) {
-                      //GO Next Screen
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -70,7 +79,6 @@ class _nameState extends State<StartedView> {
                         ),
                       );
                     } else {
-                      //Change Color
                       setState(() {
                         isChangecolor = true;
                       });

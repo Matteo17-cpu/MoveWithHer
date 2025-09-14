@@ -11,7 +11,6 @@ class AboutMovewithherPage extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // 👉 Background hijau full screen
             Positioned(
               child: Image.asset(
                 'assets/img/linearbackground.png',
@@ -19,7 +18,6 @@ class AboutMovewithherPage extends StatelessWidget {
               ),
             ),
 
-            // 👉 Konten utama
             SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -51,24 +49,20 @@ class AboutMovewithherPage extends StatelessWidget {
                           child: const CircleAvatar(
                             radius: 18,
                             backgroundImage:
-                                AssetImage('assets/img/img_avatar_1.png'),
+                                AssetImage('assets/img/Avatar.png'),
                           ),
                         ),
                       ],
                     ),
                   ),
+                  
+                  Image.asset(
+                  'assets/img/MWH.png',
+                  width: 271, 
+                  height: 271,  
+                  fit: BoxFit.cover,
+                ),
 
-                  const SizedBox(height: 35),
-
-                  // AVATAR BESAR
-                  const CircleAvatar(
-                    radius: 100,
-                    backgroundImage: AssetImage('assets/img/img_avatar_1.png'),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // TITLE & SUBTITLE
                   const Text(
                 "MoveWithHer",
                 style: TextStyle(

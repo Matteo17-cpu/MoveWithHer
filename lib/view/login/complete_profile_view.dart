@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 
 class CompleteProfileView extends StatefulWidget {
   const CompleteProfileView({super.key, required this.userId});
-  final String userId; // ganti ke String biar fleksibel
+  final String userId;
 
   @override
   State<CompleteProfileView> createState() => _CompleteProfileViewState();
@@ -40,7 +40,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
 
     if (pickedDate != null) {
       setState(() {
-        // format ISO biar konsisten ke backend
         txtDate.text = DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
@@ -128,12 +127,10 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                 ),
                 SizedBox(height: media.width * 0.05),
 
-                /// Form
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Column(
                     children: [
-                      /// Date of Birth
                       RoundTextField(
                         controller: txtDate,
                         hitText: "Date of Birth",
@@ -143,7 +140,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                       ),
                       SizedBox(height: media.width * 0.04),
 
-                      /// Weight
                       Row(
                         children: [
                           Expanded(
@@ -164,7 +160,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                       ),
                       SizedBox(height: media.width * 0.04),
 
-                      /// Height
                       Row(
                         children: [
                           Expanded(
@@ -185,7 +180,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                       ),
                       SizedBox(height: media.width * 0.04),
 
-                      /// Disabilities
                       RoundTextField(
                         controller: txtDisability,
                         hitText: "Disabilities",
@@ -235,7 +229,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
                       ),
                       SizedBox(height: media.width * 0.07),
 
-                      /// Button
                       RoundButton(
                         title: "Next",
                         type: RoundButtonType.bgGradient,
@@ -252,7 +245,6 @@ class _CompleteProfileViewState extends State<CompleteProfileView> {
     );
   }
 
-  /// Widget helper untuk box unit (KG / CM)
   Widget _unitBox(String unit) {
     return Container(
       width: 50,

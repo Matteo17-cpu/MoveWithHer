@@ -18,12 +18,17 @@ class SignUpView extends StatefulWidget {
 class _SignUpViewState extends State<SignUpView> {
   bool isCheck = false;
   bool isPasswordObsecured = true;
+  bool isRegistering = false; // tombol disable saat async berjalan
 
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> registerAccount() async {
+    if (!isCheck) return;
+
+    setState(() => isRegistering = true);
+
     try {
       final response = await http.post(
         Uri.parse("https://fitness-backend-api-silk.vercel.app/api/auth/register_account"),
@@ -35,11 +40,13 @@ class _SignUpViewState extends State<SignUpView> {
         }),
       );
 
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final userId = data["user_id"];
 
-        // Setelah sukses register akun → lanjut ke halaman isi profil
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -47,14 +54,19 @@ class _SignUpViewState extends State<SignUpView> {
           ),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Gagal register: ${response.body}")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
+    } finally {
+      if (!mounted) return;
+      setState(() => isRegistering = false);
     }
   }
 
@@ -80,7 +92,6 @@ class _SignUpViewState extends State<SignUpView> {
                 ),
                 SizedBox(height: media.width * 0.05),
 
-                // FORM INPUT (akun saja)
                 RoundTextField(controller: usernameController, hitText: "Username", icon: "assets/img/user_text.png"),
                 SizedBox(height: media.width * 0.04),
                 RoundTextField(controller: emailController, hitText: "Email", icon: "assets/img/email.png", keyboardType: TextInputType.emailAddress),
@@ -98,23 +109,18 @@ class _SignUpViewState extends State<SignUpView> {
                       color: TColor.gray,
                     ),
                     onPressed: () {
-                      setState(() {
-                        isPasswordObsecured = !isPasswordObsecured;
-                      });
+                      setState(() => isPasswordObsecured = !isPasswordObsecured);
                     },
                   ),
                 ),
 
                 SizedBox(height: media.width * 0.04),
 
-                // CHECKBOX
                 Row(
                   children: [
                     IconButton(
                       onPressed: () {
-                        setState(() {
-                          isCheck = !isCheck;
-                        });
+                        setState(() => isCheck = !isCheck);
                       },
                       icon: Icon(
                         isCheck ? Icons.check_box_outlined : Icons.check_box_outline_blank_outlined,
@@ -153,11 +159,10 @@ class _SignUpViewState extends State<SignUpView> {
 
                 SizedBox(height: media.width * 0.1),
 
-                // REGISTER BUTTON
                 RoundButton(
-                  title: "Register",
+                  title: isRegistering ? "Registering..." : "Register",
                   type: isCheck ? RoundButtonType.bgGradient : RoundButtonType.textGradient,
-                  onPressed: isCheck ? () async { await registerAccount(); } : null,
+                  onPressed: isCheck && !isRegistering ? () async { await registerAccount(); } : null,
                 ),
 
                 SizedBox(height: media.width * 0.04),
@@ -176,6 +181,7 @@ class _SignUpViewState extends State<SignUpView> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
+                            if (!mounted) return;
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const LoginView()),

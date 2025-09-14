@@ -1,9 +1,64 @@
-import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:workout_app/view/fitur/workout_plan.dart';
 import 'package:workout_app/view/home/start_exercise_page.dart';
 import 'package:workout_app/view/home/profile_page.dart';
+
+// Dummy User
+class User {
+  final String name;
+  final String disability;
+  final int? BPM;
+
+  User({required this.name, required this.disability, this.BPM});
+}
+
+// Exercise Data (mirip rule_engine.js)
+class Latihan {
+  final String id;
+  final String nama;
+  final List<String> intensity;
+  final List<String> classification;
+
+  Latihan({
+    required this.id,
+    required this.nama,
+    required this.intensity,
+    required this.classification,
+  });
+}
+
+final List<Latihan> latihanList = [
+  Latihan(id: "SeatedToeRaises", nama: "Seated Toe Raises", intensity: ["Low"], classification: ["Diplegia"]),
+  Latihan(id: "LyingLegRaises", nama: "Lying Leg Raises", intensity: ["Medium", "High"], classification: ["Diplegia"]),
+  Latihan(id: "SeatedAirBoxing", nama: "Seated Air Boxing", intensity: ["Low"], classification: ["Paraplegia"]),
+  Latihan(id: "SitUps", nama: "Sit-Ups", intensity: ["High"], classification: ["Paraplegia"]),
+  Latihan(id: "BicycleKicks", nama: "Bicycle Kicks", intensity: ["Medium"], classification: ["Diplegia"]),
+];
+
+// Rule Engine converted to Dart
+List<Latihan> rekomendasiLatihan(User user, List<Latihan> listLatihan) {
+  List<String> intensitasBoleh;
+  int bpm = user.BPM ?? 100;
+
+  if (bpm > 120) {
+    intensitasBoleh = ["Low"];
+  } else if (bpm >= 80 && bpm <= 120) {
+    intensitasBoleh = ["Low", "Medium"];
+  } else {
+    intensitasBoleh = ["Low", "Medium", "High"];
+  }
+
+  List<Latihan> hasil = [];
+  for (var l in listLatihan) {
+    if (!l.classification.contains(user.disability)) continue;
+    if (!l.intensity.any((i) => intensitasBoleh.contains(i))) continue;
+    hasil.add(l);
+  }
+
+  hasil.shuffle(Random());
+  return hasil.take(4).toList();
+}
 
 class ExercisePage extends StatefulWidget {
   const ExercisePage({super.key});
@@ -15,6 +70,7 @@ class ExercisePage extends StatefulWidget {
 class _ExercisePageState extends State<ExercisePage> {
   bool isLoading = true;
   List<WorkoutPlan> recommendations = [];
+  final User dummyUser = User(name: "Cempaka", disability: "Diplegia", BPM: 110);
 
   @override
   void initState() {
@@ -22,56 +78,32 @@ class _ExercisePageState extends State<ExercisePage> {
     fetchRecommendations();
   }
 
-  Future<void> fetchRecommendations() async {
-    try {
-      final response = await http.post(
-        Uri.parse("https://fitness-backend-api-silk.vercel.app/api/recommendation"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user": "Cempaka",
-          "disability": "Diplegia",
-          "BPM": 120,
-        }),
-      );
+  void fetchRecommendations() async {
+    setState(() {
+      isLoading = true;
+    });
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+    // Pakai rule engine Dart
+    final hasilLatihan = rekomendasiLatihan(dummyUser, latihanList);
 
-        setState(() {
-          recommendations = data.map((item) {
-            return WorkoutPlan(
-              title: item['nama'] ?? "Untitled",
-              image: "assets/img/default.png",
-              setsReps: "Intensity: ${item['intensity'] ?? 'Medium'}",
-              rest: "Rest: 60s",
-              page: const Placeholder(),
-            );
-          }).toList();
-          isLoading = false;
-        });
-      } else {
-        throw Exception("Failed to load recommendations");
-      }
-    } catch (e) {
-      debugPrint("Error fetching recommendations: $e");
-      setState(() {
-        isLoading = false;
-      });
-    }
+    setState(() {
+      recommendations = hasilLatihan.map((item) {
+        return WorkoutPlan(
+          title: item.nama,
+          image: "assets/img/default.png",
+          setsReps: "Intensity: ${item.intensity.join(', ')}",
+          rest: "Rest: 60s",
+          page: const Placeholder(),
+        );
+      }).toList();
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final weekdays = [
-      "MONDAY",
-      "TUESDAY",
-      "WEDNESDAY",
-      "THURSDAY",
-      "FRIDAY",
-      "SATURDAY",
-      "SUNDAY"
-    ];
+    final weekdays = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
     final today = weekdays[now.weekday - 1];
 
     return Scaffold(
@@ -91,28 +123,20 @@ class _ExercisePageState extends State<ExercisePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ===== HEADER =====
+                // HEADER
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Icon(Icons.menu, color: Colors.black),
-                      const Text(
-                        'Good morning, Cempaka!',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
+                      Text(
+                        'Good morning, ${dummyUser.name}!',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.black),
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const ProfilePage()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
                         },
                         child: const CircleAvatar(
                           radius: 18,
@@ -122,59 +146,41 @@ class _ExercisePageState extends State<ExercisePage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 18),
 
-                // ===== WORKOUT LIST CONTAINER =====
+                // WORKOUT LIST
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: const Color(0xFF84A2C5),
-                    ),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: const Color(0xFF84A2C5)),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Header Herstrap (statis)
                           Container(
                             width: double.infinity,
                             height: 47,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 13),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text(
                                     "HERSTRAP",
-                                    style: TextStyle(
-                                      color: Color(0xFF27384B),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: TextStyle(color: Color(0xFF27384B), fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   Container(
-                                    width: 128,
                                     height: 27,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFF89C4A0),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
+                                    decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(20)),
                                     child: const Center(
-                                      child: Text(
-                                        "CONNECTED",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(left: 2, right: 2),
+                                        child: Text(
+                                          "NOT CONNECTED",
+                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                                         ),
                                       ),
                                     ),
@@ -183,64 +189,39 @@ class _ExercisePageState extends State<ExercisePage> {
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 7),
-
-                          // Today Workout List
                           Container(
                             width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
                             child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: isLoading
                                   ? const Center(child: CircularProgressIndicator())
                                   : Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "$today WORKOUT",
-                                          style: const TextStyle(
-                                            color: Color(0xFF27384B),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
+                                          style: const TextStyle(color: Color(0xFF27384B), fontWeight: FontWeight.bold, fontSize: 16),
                                         ),
                                         const SizedBox(height: 11),
-
-                                        // Loop rekomendasi langsung Text aja
                                         ...recommendations.map((rec) {
                                           return Padding(
-                                            padding:
-                                                const EdgeInsets.only(bottom: 8.0),
+                                            padding: const EdgeInsets.only(bottom: 8.0),
                                             child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   rec.title,
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF84A2C5),
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                                  style: const TextStyle(color: Color(0xFF84A2C5), fontSize: 16, fontWeight: FontWeight.bold),
                                                 ),
                                                 Text(
                                                   rec.setsReps,
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF84A2C5),
-                                                    fontSize: 13,
-                                                  ),
+                                                  style: const TextStyle(color: Color(0xFF84A2C5), fontSize: 13),
                                                 ),
                                                 Text(
                                                   rec.rest,
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF84A2C5),
-                                                    fontSize: 13,
-                                                  ),
+                                                  style: const TextStyle(color: Color(0xFF84A2C5), fontSize: 13),
                                                 ),
                                               ],
                                             ),
@@ -250,29 +231,25 @@ class _ExercisePageState extends State<ExercisePage> {
                                     ),
                             ),
                           ),
-
-                          const SizedBox(height: 6),
-
-                          // Added Recommendations placeholder
+                          SizedBox(height: 7,),
                           Container(
-                            width: double.infinity,
-                            height: 140,
+                            width: 368,
+                            height: 146,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(15)
                             ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(14),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
                               child: Text(
                                 "ADDED RECOMMENDATIONS",
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF27384B),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold 
                                 ),
                               ),
                             ),
-                          ),
+                          )
                         ],
                       ),
                     ),
@@ -283,59 +260,27 @@ class _ExercisePageState extends State<ExercisePage> {
           ),
         ),
       ),
-
-      // ===== BOTTOM START BUTTON =====
       bottomNavigationBar: Container(
         width: double.infinity,
         height: 83,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF84A2C5), Color(0xFFFFFFFF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          gradient: LinearGradient(colors: [Color(0xFF84A2C5), Color(0xFFFFFFFF)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
         ),
         child: Center(
           child: GestureDetector(
             onTap: () {
-              if (isLoading) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Please wait... still loading workouts")),
-                );
-                return;
-              }
-              if (recommendations.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("No workouts available today")),
-                );
-                return;
-              }
-
+              if (isLoading || recommendations.isEmpty) return;
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      StartExercisePage(workoutlist: recommendations),
-                ),
+                MaterialPageRoute(builder: (context) => StartExercisePage(workoutlist: recommendations)),
               );
             },
             child: Container(
               width: 245,
               height: 47,
-              decoration: BoxDecoration(
-                color: const Color(0xFF84A2C5),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFF84A2C5), borderRadius: BorderRadius.circular(12)),
               child: const Center(
-                child: Text(
-                  "START EXERCISE",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: Text("START EXERCISE", style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold)),
               ),
             ),
           ),

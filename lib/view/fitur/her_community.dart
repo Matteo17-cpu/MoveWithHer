@@ -81,19 +81,25 @@ class _HerCommunityState extends State<HerCommunity> {
                       _workoutItem(
                         image: "assets/img/sports.png",
                         title: "Sportunnity",
-                        subtitle: "East Jakarta Sport Community ",
+                        subtitle: "East Jakarta Sport Community",
                       ),
                       const SizedBox(height: 8),
                       _workoutItem(
-                        image: "assets/img/sports.png",
-                        title: "Sportunnity",
-                        subtitle: "East Jakarta Sport Community ",
+                        image: "assets/img/community1.png",
+                        title: "BasketQueen",
+                        subtitle: "Basketball Community East Jakarta",
                       ),
                       const SizedBox(height: 8),
                       _workoutItem(
-                        image: "assets/img/sports.png",
-                        title: "Sportunnity",
-                        subtitle: "East Jakarta Sport Community ",
+                        image: "assets/img/community2.png",
+                        title: "JakartaMovers",
+                        subtitle: "Healthy restaurants trip",
+                      ),
+                      const SizedBox(height: 8),
+                      _workoutItem(
+                        image: "assets/img/community3.png",
+                        title: "CookWithJarvis",
+                        subtitle: "Cooking community with the girlzz!",
                       ),
         
                       const SizedBox(height: 100), // biar konten ga ketutupan button

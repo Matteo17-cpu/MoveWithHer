@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workout_app/common/color_extension.dart';
 import 'package:workout_app/view/fitur/her_community.dart';
+import 'package:workout_app/view/fitur/her_cycle.dart';
+import 'package:workout_app/view/fitur/her_diet.dart';
 import 'package:workout_app/view/fitur/scan_dish.dart';
 import 'package:workout_app/view/fitur/workout_recommendations.dart';
 import 'package:workout_app/view/home/about_herstrap.dart';
@@ -245,8 +247,12 @@ class _DashboardState extends State<Dashboard> {
                                   builder: (context) =>
                                       WorkoutRecommendations()));
                         }),
-                        _featureIcon("HerCycle", "assets/img/menstrual_tracker.png"),
-                        _featureIcon("HerDiet", "assets/img/diet.png"),
+                        _featureIcon("HerCycle", "assets/img/menstrual_tracker.png", onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => HerCycle()));
+                        },),
+                        _featureIcon("HerDiet", "assets/img/diet.png", onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => HerDiet()));
+                        },),
                       ],
                     ),
                   ),

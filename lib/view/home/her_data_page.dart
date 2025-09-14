@@ -11,7 +11,6 @@ class HerDataPage extends StatelessWidget {
     body: SafeArea(
       child: Stack(
         children: [
-          // 👉 Background fullscreen
           Positioned.fill(
             child: Image.asset(
               'assets/img/linearbackground3.png',
@@ -19,7 +18,6 @@ class HerDataPage extends StatelessWidget {
             ),
           ),
 
-          // 👉 Appbar custom di atas background
           SingleChildScrollView(
             child: Column(
               children: [
