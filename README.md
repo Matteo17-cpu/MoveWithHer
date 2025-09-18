@@ -1,16 +1,23 @@
 # MoveWithHer
 
-A new Flutter project.
+MoveWithHer adalah aplikasi kebugaran inklusif berbasis Flutter yang dirancang khusus untuk perempuan penyandang disabilitas. Aplikasi ini membantu pengguna menyesuaikan program latihan berdasarkan kemampuan, kebutuhan, dan fase biologis seperti siklus menstruasi. Dengan integrasi strap EMG, MoveWithHer juga dapat membaca data kekuatan otot untuk memberikan rekomendasi latihan yang lebih personal.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Proyek ini adalah titik awal untuk pengembangan aplikasi Flutter dengan fokus pada kesehatan dan kebugaran perempuan penyandang disabilitas secara inklusif.
 
-A few resources to get you started if this is your first Flutter project:
+### Fitur Utama
+- Program latihan personal berdasarkan kemampuan dan pengguna.  
+- Penyesuaian program latihan untuk perempuan dengan mempertimbangkan fase menstruasi.  
+- Dukungan untuk penyandang disabilitas dengan latihan yang lebih ramah dan adaptif.  
+- Integrasi dengan strap EMG untuk memantau kekuatan detak jantung secara real-time.  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Teknologi
+- **Framework:** Flutter  
+- **Backend & Database:** Supabase  
+- **Integrasi Hardware:** EMG Strap (muscle activity tracking)  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Cara Menjalankan
+1. Clone repositori ini:  
+   ```bash
+   git clone https://github.com/username/movewithher.git
